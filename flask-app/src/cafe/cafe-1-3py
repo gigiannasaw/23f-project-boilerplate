@@ -1,0 +1,329 @@
+hi
+
+from flask import Blueprint, request, jsonify, make_response, current_app
+import json
+from src import db
+
+cafe = Blueprint('cafe', __name__)
+
+# Get all the cafes from the database
+@cafe.route('/cafe', methods=['GET'])
+def get_cafes():
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+
+    #query
+    query = '''
+            SELECT name, street, city, state, zip, Ratings.price 
+            FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
+        '''
+
+    # use cursor to query the database for a list of products
+    cursor.execute(query)
+
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # create an empty dictionary object to use in 
+    # putting column headers together with data
+    json_data = []
+
+    # fetch all the data from the cursor
+    theData = cursor.fetchall()
+
+    # for each of the rows, zip the data elements together with
+    # the column headers. 
+    for row in theData:
+        json_data.append(dict(zip(column_headers, row)))
+
+    return jsonify(json_data)
+
+# ---- 
+
+# ENDPOINT 1
+
+# 1.1 GET: Return a list of all cafes with discounts 
+
+@cafe.route('/cafe/promotions', methods=['GET'])
+def get_cafe_discounts():
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+
+    # Query -  a list of cafes with promotions
+    cursor.execute('''
+                    SELECT c.name, c.street, c.city, c.state, c.zip, p.price, r.rating
+                    FROM Cafe c
+                    JOIN promotions p ON c.cafe_id = p.cafe_id
+                    JOIN Ratings r ON c.cafe_id = r.cafe_id
+                    WHERE p.promo_id IS NOT NULL;
+
+                ''')
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # create an empty dictionary object to use in 
+    # putting column headers together with data
+    json_data = []
+
+    # fetch all the data from the cursor
+    theData = cursor.fetchall()
+
+    # for each of the rows, zip the data elements together with
+    # the column headers. 
+    for row in theData:
+        json_data.append(dict(zip(column_headers, row)))
+
+    return jsonify(json_data)
+
+# 1.2 Add a new cafe with discounts  to the list
+@cafe.route('/cafe', methods=['POST'])
+def add_new_disc_cafe(): 
+    try:
+        # Collecting data from the request object
+        the_data = request.json
+        current_app.logger.info(the_data)
+
+        # Extracting the variables
+        owner = the_data['owner_id']
+        time = the_data['time']
+        days = the_data['days']
+        website = the_data['website_link']
+        name = the_data['name']
+        street = the_data['street']
+        city = the_data['city']
+        state = the_data['state']
+        zip_code = the_data['zip']
+        price = the_data['price']
+        wifi = the_data['has_wifi']
+        outlets = the_data['has_outlets']
+        cafe_id = the_data['cafe_id']
+
+        # Query - add a new cafe to the list
+        query_cafe = '''
+            INSERT INTO Cafe (owner_id, time, days, website_link, name, street, city, state, zip, price, has_wifi, has_outlets, cafe_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        '''
+        current_app.logger.info(query_cafe)
+
+        # Executing and committing the insert statement for the cafe
+        cursor_cafe = db.get_db().cursor()
+        cursor_cafe.execute(query_cafe, (owner, time, days, website, name, street, city, state, zip_code, price, wifi, outlets, cafe_id))
+        db.get_db().commit()
+
+        # Update the promotions table
+        promotions = the_data.get('promotions', [])
+        if promotions:
+            query_promotions = 'INSERT INTO promotions (cafe_id, title, descrip, duration) VALUES (%s, %s, %s, %s)'
+            for promo_data in promotions:
+                cursor_promotions = db.get_db().cursor()
+                cursor_promotions.execute(query_promotions, (cafe_id, promo_data['title'], promo_data['descrip'], promo_data['duration']))
+                db.get_db().commit()
+
+        return jsonify({"message": "Cafe added successfully"})
+
+# ---- 
+# ENDPOINT 2 
+
+# 2.1 Return a list of all promotions for a cafe with {cafe_id}
+@cafe.route('/cafe/promotions/<cafe_id>', methods=['GET'])
+def get_cafe_promo(cafe_id): 
+    # Constructing the query with GROUP BY
+        query = '''
+            SELECT c.cafe_id, c.name as cafe_name, GROUP_CONCAT(p.title) as promotion_titles
+            FROM promotions p
+            JOIN Cafe c ON p.cafe_id = c.cafe_id
+            GROUP BY c.cafe_id
+        '''
+
+        # Executing the query
+        cursor = db.get_db().cursor()
+        cursor.execute(query)
+
+        # Fetching all cafes with their promotions
+        cafes_with_promotions = cursor.fetchall()
+
+        # Converting the result to a list of dictionaries
+        cafes_data = [{'cafe_id': cafe[0], 'cafe_name': cafe[1], 'promotions': cafe[2].split(',')} for cafe in cafes_with_promotions]
+
+        return jsonify(cafes_data), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Error fetching cafes with promotions: {str(e)}")
+        return jsonify({"error": "Failed to fetch cafes with promotions"}), 500
+
+# 2.2 Add a new discount to the list
+@cafe.route('/cafe/promotions/<int:cafe_id>', methods=['POST'])
+def add_new_discount(cafe_id):
+    try:
+        # Collecting data from the request object
+        discount_data = request.json
+        current_app.logger.info(discount_data)
+
+        # Extracting the variables
+        title = discount_data.get('title')
+        descrip = discount_data.get('descrip')
+        duration = discount_data.get('duration')
+
+        # Query - add a new discount to the promotions table
+        query_discount = '''
+            INSERT INTO promotions (cafe_id, title, descrip, duration)
+            VALUES (%s, %s, %s, %s)
+        '''
+
+        # Executing and committing the insert statement for the discount
+        cursor_discount = db.get_db().cursor()
+        cursor_discount.execute(query_discount, (cafe_id, title, descrip, duration))
+        db.get_db().commit()
+
+        return jsonify({"message": "Discount added successfully"}), 201
+
+    except Exception as e:
+        current_app.logger.error(f"Error adding discount: {str(e)}")
+        return jsonify({"error": "Failed to add discount"}), 500
+
+# 2.3 Update a discount in the list
+@cafe.route('/cafe/promotions/<int:cafe_id>', methods=['PUT'])
+def update_discount(cafe_id):
+    try:
+        # Collecting data from the request object
+        discount_data = request.json
+        current_app.logger.info(discount_data)
+
+        # Extracting the variables
+        promo_id = discount_data.get('promo_id')  # Assuming promo_id is used to identify the discount
+        title = discount_data.get('title')
+        descrip = discount_data.get('descrip')
+        duration = discount_data.get('duration')
+
+        # Query - update the discount in the promotions table
+        query_update_discount = '''
+            UPDATE promotions
+            SET title = %s, descrip = %s, duration = %s
+            WHERE cafe_id = %s AND promo_id = %s
+        '''
+
+        # Executing and committing the update statement for the discount
+        cursor_update_discount = db.get_db().cursor()
+        cursor_update_discount.execute(query_update_discount, (title, descrip, duration, cafe_id, promo_id))
+        db.get_db().commit()
+
+        return jsonify({"message": "Discount updated successfully"}), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Error updating discount: {str(e)}")
+        return jsonify({"error": "Failed to update discount"}), 500
+    
+
+# 2.4 Delete a discount in the list
+@cafe.route('/cafe/promotions/<int:cafe_id>', methods=['DELETE'])
+def delete_discount(cafe_id):
+    try:
+        # Collecting data from the request object
+        discount_data = request.json
+        current_app.logger.info(discount_data)
+
+        # Extracting the variables
+        promo_id = discount_data.get('promo_id')  # Assuming promo_id is used to identify the discount
+
+        # Query - delete the discount from the promotions table
+        query_delete_discount = '''
+            DELETE FROM promotions
+            WHERE cafe_id = %s AND promo_id = %s
+        '''
+
+        # Executing and committing the delete statement for the discount
+        cursor_delete_discount = db.get_db().cursor()
+        cursor_delete_discount.execute(query_delete_discount, (cafe_id, promo_id))
+        db.get_db().commit()
+
+        return jsonify({"message": "Discount deleted successfully"}), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Error deleting discount: {str(e)}")
+        return jsonify({"error": "Failed to delete discount"}), 500
+
+
+# ------
+#  ENDPOINT 3 
+
+# 3.1 GET - Return a list of all cafes with wifi
+@cafe.route('/cafe/wifi', methods=['GET'])
+def get_cafe_wifi():
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+
+    #query
+    query = ("""
+    SELECT name, street, city, state, zip, Ratings.price
+                    FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
+                    WHERE has_wifi = 1
+    
+
+    """)
+
+    # use cursor to query the database for a list of products
+    cursor.execute(query)
+
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # create an empty dictionary object to use in 
+    # putting column headers together with data
+    json_data = []
+
+    # fetch all the data from the cursor
+    theData = cursor.fetchall()
+
+    # for each of the rows, zip the data elements together with
+    # the column headers. 
+    for row in theData:
+        json_data.append(dict(zip(column_headers, row)))
+
+    return jsonify(json_data)
+
+# 3.2 POST - Add a new cafe with wifi to the list 
+@cafe.route('/cafe', methods=['POST'])
+def add_new_wifi_cafe(): 
+
+    # collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    #extracting the variable
+    owner = the_data['owner_id']
+    time = the_data['time']
+    days = the_data['days']
+    website = the_data['website_link']
+    name = the_data['name']
+    street = the_data['street']
+    city = the_data['city']
+    state = the_data['state']
+    zip = the_data['zip']
+    price = the_data['price']
+    wifi = 1
+    outlets = the_data['has_outlets']
+    id = the_data['cafe_id']
+
+    # Constructing the query
+    query = 'INSERT INTO Cafe (owner_id, time, days, website_link, name, street, city, state, zip, price, has_wifi, has_outlets, cafe_id) VALUES ("'
+    query += int(owner) + '", "'
+    query += time + '", "'
+    query += days + '", "'
+    query += website + '", '
+    query += name + '", '
+    query += street + '", '
+    query += city + '", '
+    query += state + '", '
+    query += zip + '", '
+    query += price + '", '
+    query += wifi + '", '
+    query += outlets + '", '
+    query += id + ')'
+    current_app.logger.info(query)
+
+    # executing and committing the insert statement 
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    db.get_db().commit()
+
+    return 'Success!'
