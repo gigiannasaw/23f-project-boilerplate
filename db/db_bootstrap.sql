@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS Cafe (
     time text NOT NULL,
     days text NOT NULL,
     website_link text,
-    cafe_id int PRIMARY KEY,
+    cafe_id int PRIMARY KEY AUTO_INCREMENT,
     name text NOT NULL,
     street text NOT NULL,
     city text NOT NULL,
