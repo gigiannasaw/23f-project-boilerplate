@@ -10,13 +10,13 @@ CREATE DATABASE CafeConnect;
 -- all privilages to the new database we just created. 
 -- TODO: If you changed the name of the database above, you need 
 -- to change it here too.
-grant all privileges on CafeConnect;.* to 'webapp'@'%';
+grant all privileges on CafeConnect.* to 'webapp'@'%';
 flush privileges;
 
 -- Move into the database we just created.
 -- TODO: If you changed the name of the database above, you need to
 -- change it here too. 
-USE CafeConnect;;
+USE CafeConnect;
 
 -- Put your DDL 
 
