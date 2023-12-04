@@ -14,8 +14,13 @@ def get_cafes():
     #query
     query = '''
             SELECT name, street, city, state, zip, Ratings.price 
-            FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
+            FROM Cafe
         '''
+    # #query
+    # query = '''
+    #         SELECT name, street, city, state, zip, Ratings.price 
+    #         FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
+    #     '''
 
     # use cursor to query the database for a list of products
     cursor.execute(query)
@@ -183,33 +188,33 @@ def update_cafe_hours(cafe_id):
 
 #ENDPOINT 6 --------------
 # Get a list of all the cafes with the given price rating
-@cafe.route('/cafe/<price>', methods=['GET'])
-def get_cafes_price(price):
-    # get a cursor object from the database
-    cursor = db.get_db().cursor()
+# @cafe.route('/cafe/<price>', methods=['GET'])
+# def get_cafes_price(price):
+#     # get a cursor object from the database
+#     cursor = db.get_db().cursor()
 
-    # use cursor to query the database for a list of products
-    cursor.execute('''
-                    SELECT name, street, city, state, zip, Ratings.price
-                    FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
-                    WHERE Ratings.price = ''' + price)
+#     # use cursor to query the database for a list of products
+#     cursor.execute('''
+#                     SELECT name, street, city, state, zip, Ratings.price
+#                     FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
+#                     WHERE Ratings.price = ''' + price)
 
-    # grab the column headers from the returned data
-    column_headers = [x[0] for x in cursor.description]
+#     # grab the column headers from the returned data
+#     column_headers = [x[0] for x in cursor.description]
 
-    # create an empty dictionary object to use in 
-    # putting column headers together with data
-    json_data = []
+#     # create an empty dictionary object to use in 
+#     # putting column headers together with data
+#     json_data = []
 
-    # fetch all the data from the cursor
-    theData = cursor.fetchall()
+#     # fetch all the data from the cursor
+#     theData = cursor.fetchall()
 
-    # for each of the rows, zip the data elements together with
-    # the column headers. 
-    for row in theData:
-        json_data.append(dict(zip(column_headers, row)))
+#     # for each of the rows, zip the data elements together with
+#     # the column headers. 
+#     for row in theData:
+#         json_data.append(dict(zip(column_headers, row)))
 
-    return jsonify(json_data)
+#     return jsonify(json_data)
 
 # Add a cafe to the list of cafes with a given price
 @cafe.route('/cafe/<price>', methods=['POST'])
@@ -287,3 +292,79 @@ def get_cafes_price(service_speed):
         json_data.append(dict(zip(column_headers, row)))
 
     return jsonify(json_data)  
+
+#ENDPOINT 12 --------------
+# Add a comment to a cafe
+@cafe.route('/cafe/<cafe_id>/<review_id>/comment', methods=['POST'])
+def add_new_review_comment(cafe_id, review_id): 
+    
+    # collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    #extracting the variable
+    customer_id = the_data['customer_id']
+    content = the_data.get('comment')
+
+    if not content:
+        return 'Bad Request: Missing or empty "comment" in the request body', 400
+
+    # constructing the query
+    query = 'INSERT INTO Reviews (customer_id, cafe_id, review_id, content) VALUES (%s, %s, %s, %s)'
+    values = (customer_id, cafe_id, review_id, content)
+    current_app.logger.info(query)
+
+    # executing and committing the insert statement 
+    cursor = db.get_db().cursor()
+    cursor.execute(query, values)
+    db.get_db().commit()
+    
+    return 'Success!'
+
+# Update a comment for a cafe
+@cafe.route('/cafe/<cafe_id>/<review_id>/comment', methods=['PUT'])
+def update_review_comment(cafe_id, review_id):
+    # collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    # extracting the variable
+    customer_id = the_data['customer_id']
+    updated_comment = the_data.get('comment')
+
+    if updated_comment is None: 
+        return 'Bad Request: Missing or empty "updated_comment" in the request body', 400
+
+    # constructing the query with parameterized query
+    query = 'UPDATE Reviews SET content = %s WHERE cafe_id = %s AND review_id = %s AND customer_id = %s'
+    values = (updated_comment, cafe_id, review_id, customer_id)
+    current_app.logger.info(query % values)
+
+    # Executing and committing the update statement 
+    cursor = db.get_db().cursor()
+    cursor.execute(query, values)
+    db.get_db().commit()
+    
+    return 'Success!'
+
+# Delete a comment for a cafe
+@cafe.route('/cafe/<cafe_id>/<review_id>/comment', methods=['DELETE'])
+def delete_review_comment(cafe_id, review_id):
+    # Collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    # Extracting the variable
+    customer_id = the_data['customer_id']
+
+    # Constructing the query with parameterized query
+    query = 'DELETE FROM Reviews WHERE cafe_id = %s AND review_id = %s AND customer_id = %s'
+    values = (cafe_id, review_id, customer_id)
+    current_app.logger.info(query % values)
+
+    # Executing and committing the delete statement 
+    cursor = db.get_db().cursor()
+    cursor.execute(query, values)
+    db.get_db().commit()
+
+    return 'Comment deleted successfully!'
