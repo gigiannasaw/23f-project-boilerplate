@@ -26,4 +26,4 @@ Nandini Ghosh, Gianna Saw, Akash Cheela, Olivia Gao, Jiana Ang
 
 ## Database 
 
-The **db_bootstrap.sql** file contains all the database code for this project including schemas and mock-up values created using
+The **db_bootstrap.sql** file contains all the database code for this project including schemas and mock-up values created using Mockaroo, ChatGPT and manually.
