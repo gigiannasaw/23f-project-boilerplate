@@ -183,33 +183,34 @@ def update_cafe_hours(cafe_id):
 
 #ENDPOINT 6 --------------
 # Get a list of all the cafes with the given price rating
-@cafe.route('/cafe/<price>', methods=['GET'])
-def get_cafes_price(price):
-    # get a cursor object from the database
-    cursor = db.get_db().cursor()
+# @cafe.route('/cafe/<price>', methods=['GET'])
+# def get_cafes_price(price):
+#     # get a cursor object from the database
+#     cursor = db.get_db().cursor()
 
-    # use cursor to query the database for a list of products
-    cursor.execute('''
-                    SELECT name, street, city, state, zip, Ratings.price
-                    FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
-                    WHERE Ratings.price = ''' + price)
+#     # use cursor to query the database for a list of products
+#     cursor.execute('''
+#                     SELECT name, street, city, state, zip, Ratings.price
+#                     FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
+#                     WHERE Ratings.price = ''' + price)
 
-    # grab the column headers from the returned data
-    column_headers = [x[0] for x in cursor.description]
+#     # grab the column headers from the returned data
+#     column_headers = [x[0] for x in cursor.description]
 
-    # create an empty dictionary object to use in 
-    # putting column headers together with data
-    json_data = []
+#     # create an empty dictionary object to use in 
+#     # putting column headers together with data
+#     json_data = []
 
-    # fetch all the data from the cursor
-    theData = cursor.fetchall()
+#     # fetch all the data from the cursor
+#     theData = cursor.fetchall()
 
-    # for each of the rows, zip the data elements together with
-    # the column headers. 
-    for row in theData:
-        json_data.append(dict(zip(column_headers, row)))
+#     # for each of the rows, zip the data elements together with
+#     # the column headers. 
+#     for row in theData:
+#         json_data.append(dict(zip(column_headers, row)))
 
-    return jsonify(json_data)
+#     return jsonify(json_data)
+
 
 # Add a cafe to the list of cafes with a given price
 @cafe.route('/cafe/<price>', methods=['POST'])
