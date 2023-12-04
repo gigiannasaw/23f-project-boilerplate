@@ -13,8 +13,10 @@ def get_cafes():
 
     #query
     query = '''
-            SELECT name, street, city, state, zip, Ratings.price 
-            FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
+            # SELECT name, street, city, state, zip, Ratings.price 
+            # FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
+
+            SELECT * FROM Cafe
         '''
 
     # use cursor to query the database for a list of products
