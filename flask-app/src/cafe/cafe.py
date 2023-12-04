@@ -73,6 +73,20 @@ def add_new_cafe():
     
     return 'Success!'
 
+# Delete a cafe
+@cafe.route('/cafe/<cafe_id>', methods=['DELETE'])  # Using path parameter for cafe ID
+def delete_cafe(cafe_id):
+    # Constructing the query using a placeholder
+    query = 'DELETE FROM Cafe WHERE cafe_id = %s'  
+
+    # Executing the query with the parameter
+    cursor = db.get_db().cursor()
+    cursor.execute(query, (cafe_id,))
+    db.get_db().commit()
+
+    # Return success message
+    return 'Cafe deleted successfully'
+
 # --------------
 #ENDPOINT 4
 # Get all the cafes with outlets from the database
@@ -117,7 +131,7 @@ def get_cafe_detail(cafe_id):
     query = ('''
             SELECT * 
             FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id JOIN Reviews re ON c.cafe_id = re.cafe_id 
-            WHERE id = ''' + str(id))
+            WHERE id = ''' + str(cafe_id))
     cursor.execute(query)
     column_headers = [x[0] for x in cursor.description]
     json_data = []
