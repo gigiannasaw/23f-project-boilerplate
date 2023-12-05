@@ -117,11 +117,11 @@ def add_new_discount(cafe_id):
     # Return success message or appropriate response
     return 'New discount added successfully'
 
-# 2.3 Delete all discount from a cafe from list
-@cafe.route('/cafe/<cafe_id>/promotions', methods=['DELETE'])
+# 2.3 Delete discount from a cafe from list
+@cafe.route('/cafe/<cafe_id>/promotions/<promo_id>', methods=['DELETE'])
 def delete_discount(cafe_id, promo_id):
     # Constructing the query using placeholder for cafe_id 
-    query = 'DELETE FROM Promotion WHERE cafe_id = %s'
+    query = 'DELETE FROM Promotion WHERE cafe_id = %s and promo_id = %s'
 
     # Executing the query with the parameters
     cursor = db.get_db().cursor()
