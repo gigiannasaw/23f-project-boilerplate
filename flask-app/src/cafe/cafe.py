@@ -56,6 +56,7 @@ def get_cafeid_with_promotions():
     cursor = db.get_db().cursor()
 
     #query
+    query = '''
             SELECT
                 C.name AS cafe_name,
                 C.time,
