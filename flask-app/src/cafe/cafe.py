@@ -47,6 +47,44 @@ def get_cafes_with_promotions():
 
     return jsonify(json_data)
 
+#ENOPOINT 2
+# Get all the promotions for a specific cafe
+@cafe.route('/cafe/<cafe_id>/promotions', methods=['GET'])
+def get_cafe_promotions(cafe_id):
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+
+    #query
+    query = '''
+                SELECT
+                    P.title, P.description, P.duration
+                FROM
+                    Cafe AS C
+                JOIN
+                    Promotion AS P ON C.cafe_id = P.cafe_id
+                WHERE C.cafe_id = %s;
+        '''
+
+    # use cursor to query the database for a list of products
+    cursor.execute(query, (cafe_id,))
+
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # create an empty dictionary object to use in 
+    # putting column headers together with data
+    json_data = []
+
+    # fetch all the data from the cursor
+    theData = cursor.fetchall()
+
+    # for each of the rows, zip the data elements together with
+    # the column headers. 
+    for row in theData:
+        json_data.append(dict(zip(column_headers, row)))
+
+    return jsonify(json_data)
+
 #ENDPOINT 16
 # Get all the cafes from the database
 @cafe.route('/cafe', methods=['GET'])
