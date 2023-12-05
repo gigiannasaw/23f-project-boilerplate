@@ -245,19 +245,22 @@ def get_cafes_price():
 
     return jsonify(json_data)  
 
-#ENDPOINT 11 --------------
+# ENDPOINT 11 --------------
 # Get all the reviews for a particular cafe
 @cafe.route('/cafe/<cafe_id>/reviews', methods=['GET'])
-def get_cheap_cafes(cafe_id):
+def get_cafe_reviews(cafe_id):
     # get a cursor object from the database
     cursor = db.get_db().cursor()
-    query = ('''
-                SELECT first_name, last_name, rank, content
-                FROM Customers cust JOIN Reviews r ON cust.customer_id = r.customer_id JOIN Cafe c ON r.cafe_id = c.cafe_id
-                WHERE cafe_id = %s
-            ''')
 
-    # use cursor to query the database for a list of products
+    # Prepare the SQL query to retrieve reviews for the specified cafe
+    query = '''
+            SELECT c.first_name, c.last_name, c.rank, r.content
+            FROM Customer AS c
+            JOIN Reviews AS r ON c.customer_id = r.customer_id
+            WHERE r.cafe_id = %s
+        '''
+
+    # Execute the query with the specified cafe_id parameter
     cursor.execute(query, (cafe_id,))
 
     # grab the column headers from the returned data
