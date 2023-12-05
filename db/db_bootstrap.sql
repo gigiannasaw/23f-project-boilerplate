@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS Cafe (
     state text NOT NULL,
     has_wifi boolean,
     has_outlets boolean,
-    FOREIGN KEY (owner_id) REFERENCES BusinessOwner(owner_id)
+    FOREIGN KEY (owner_id) REFERENCES BusinessOwner(owner_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Customer (
@@ -58,24 +58,24 @@ CREATE TABLE IF NOT EXISTS Ratings (
     customer_id int NOT NULL,
     cafe_id int NOT NULL,
     PRIMARY KEY(rating_id, cafe_id, customer_id),
-    FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id),
-    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+    FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Student (
     customer_id int PRIMARY KEY,
-    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Critic (
     customer_id int PRIMARY KEY,
     user_status text NOT NULL,
-    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS DailyDrinker (
     customer_id int PRIMARY KEY,
-    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Promotion (
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS Promotion (
     title text,
     duration int,
     PRIMARY KEY (cafe_id, promo_id),
-    FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id)
+    FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Reviews (
@@ -94,8 +94,8 @@ CREATE TABLE IF NOT EXISTS Reviews (
     review_id int NOT NULL,
     content text,
     PRIMARY KEY (customer_id, review_id),
-    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
-    FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id)
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Invite (
@@ -103,8 +103,8 @@ CREATE TABLE IF NOT EXISTS Invite (
     customer_id int NOT NULL,
     description text NOT NULL,
     cafe_id int NOT NULL,
-    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
-    FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id)
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
