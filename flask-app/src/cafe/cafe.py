@@ -90,11 +90,10 @@ def get_cafeid_with_promotions():
 
     return jsonify(json_data)
 
-#2.2 Add new discount to the list 
+#2.2 Add new discount to the list  
 @cafe.route('/cafe/<cafe_id>/promotions', methods=['POST'])
 def add_new_discount(cafe_id):
-    # Assuming that you receive data for the new discount in the request body
-    data = request.json  # Assuming the data is in JSON format, adjust if needed
+    data = request.json
 
     # Extract relevant information from the data
     promo_title = data.get('title')
@@ -138,7 +137,9 @@ def cafes_with_wifi():
 
     # query to select cafes with WiFi
     query = '''
-            SELECT cafe_id, name AS cafe_name, street, city, state, zip
+            SELECT cafe_id, 
+            name AS cafe_name, 
+            CONCAT(C.street, ', ', C.city, ', ', C.state, ' ', C.zip) AS address
             FROM Cafe
             WHERE has_wifi = 1
         '''
