@@ -5,8 +5,50 @@ from src import db
 
 cafe = Blueprint('cafe', __name__)
 
-# Get all the cafes from the database
+#ENDPOINT 1
+# Get all the cafes with promotions
+@cafe.route('/cafe/promotions', methods=['GET'])
+def get_cafes_with_promotions():
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+
+    #query
+    query = '''
+            SELECT
+                C.name AS cafe_name,
+                C.time,
+                C.days,
+                CONCAT(C.street, ', ', C.city, ', ', C.state, ' ', C.zip) AS address
+            FROM
+                Cafe AS C
+            JOIN
+                Promotion AS P ON C.cafe_id = P.cafe_id
+            GROUP BY cafe_name, time, days,
+                    address;   
+        '''
+
+    # use cursor to query the database for a list of products
+    cursor.execute(query)
+
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # create an empty dictionary object to use in 
+    # putting column headers together with data
+    json_data = []
+
+    # fetch all the data from the cursor
+    theData = cursor.fetchall()
+
+    # for each of the rows, zip the data elements together with
+    # the column headers. 
+    for row in theData:
+        json_data.append(dict(zip(column_headers, row)))
+
+    return jsonify(json_data)
+
 #ENDPOINT 16
+# Get all the cafes from the database
 @cafe.route('/cafe', methods=['GET'])
 def get_cafes():
     # get a cursor object from the database
@@ -14,7 +56,7 @@ def get_cafes():
 
     #query
     query = '''
-            SELECT time, days, name, street, city, state, zip
+            SELECT time, days, name, CONCAT(street, ', ', city, ', ', state, ' ', zip) AS address
             FROM Cafe
         '''
 
@@ -279,79 +321,3 @@ def get_cafe_reviews(cafe_id):
         json_data.append(dict(zip(column_headers, row)))
 
     return jsonify(json_data)
-
-#ENDPOINT 12 --------------
-# Add a comment to a cafe
-@cafe.route('/cafe/<cafe_id>/<review_id>/comment', methods=['POST'])
-def add_new_review_comment(cafe_id, review_id): 
-    
-    # collecting data from the request object 
-    the_data = request.json
-    current_app.logger.info(the_data)
-
-    #extracting the variable
-    customer_id = the_data['customer_id']
-    content = the_data.get('comment')
-
-    if not content:
-        return 'Bad Request: Missing or empty "comment" in the request body', 400
-
-    # constructing the query
-    query = 'INSERT INTO Reviews (customer_id, cafe_id, review_id, content) VALUES (%s, %s, %s, %s)'
-    values = (customer_id, cafe_id, review_id, content)
-    current_app.logger.info(query)
-
-    # executing and committing the insert statement 
-    cursor = db.get_db().cursor()
-    cursor.execute(query, values)
-    db.get_db().commit()
-    
-    return 'Success!'
-
-# Update a comment for a cafe
-@cafe.route('/cafe/<cafe_id>/<review_id>/comment', methods=['PUT'])
-def update_review_comment(cafe_id, review_id):
-    # collecting data from the request object 
-    the_data = request.json
-    current_app.logger.info(the_data)
-
-    # extracting the variable
-    customer_id = the_data['customer_id']
-    updated_comment = the_data.get('comment')
-
-    if updated_comment is None: 
-        return 'Bad Request: Missing or empty "updated_comment" in the request body', 400
-
-    # constructing the query with parameterized query
-    query = 'UPDATE Reviews SET content = %s WHERE cafe_id = %s AND review_id = %s AND customer_id = %s'
-    values = (updated_comment, cafe_id, review_id, customer_id)
-    current_app.logger.info(query % values)
-
-    # Executing and committing the update statement 
-    cursor = db.get_db().cursor()
-    cursor.execute(query, values)
-    db.get_db().commit()
-    
-    return 'Success!'
-
-# Delete a comment for a cafe
-@cafe.route('/cafe/<cafe_id>/<review_id>/comment', methods=['DELETE'])
-def delete_review_comment(cafe_id, review_id):
-    # Collecting data from the request object 
-    the_data = request.json
-    current_app.logger.info(the_data)
-
-    # Extracting the variable
-    customer_id = the_data['customer_id']
-
-    # Constructing the query with parameterized query
-    query = 'DELETE FROM Reviews WHERE cafe_id = %s AND review_id = %s AND customer_id = %s'
-    values = (cafe_id, review_id, customer_id)
-    current_app.logger.info(query % values)
-
-    # Executing and committing the delete statement 
-    cursor = db.get_db().cursor()
-    cursor.execute(query, values)
-    db.get_db().commit()
-
-    return 'Comment deleted successfully!'
