@@ -47,6 +47,158 @@ def get_cafes_with_promotions():
 
     return jsonify(json_data)
 
+# ENDPOINT 2 
+#2.1 GET a list of all promotions for a cafe with {cafe_id}
+@cafe.route('/cafe/<cafe_id>/promotions', methods=['GET'])
+def get_cafeid_with_promotions():
+
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+
+    #query
+            SELECT
+                C.name AS cafe_name,
+                C.time,
+                C.days,
+                CONCAT(C.street, ', ', C.city, ', ', C.state, ' ', C.zip) AS address
+            FROM
+                Cafe AS C
+            JOIN
+                Promotion AS P ON C.cafe_id = P.cafe_id
+            GROUP BY cafe_name, time, days,
+                    address;   
+        '''
+
+    # use cursor to query the database for a list of products
+    cursor.execute(query)
+
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # create an empty dictionary object to use in 
+    # putting column headers together with data
+    json_data = []
+
+    # fetch all the data from the cursor
+    theData = cursor.fetchall()
+
+    # for each of the rows, zip the data elements together with
+    # the column headers. 
+    for row in theData:
+        json_data.append(dict(zip(column_headers, row)))
+
+    return jsonify(json_data)
+
+#2.2 Add new discount to the list 
+@cafe.route('/cafe/<cafe_id>/promotions', methods=['POST'])
+def add_new_discount(cafe_id):
+    # Assuming that you receive data for the new discount in the request body
+    data = request.json  # Assuming the data is in JSON format, adjust if needed
+
+    # Extract relevant information from the data
+    promo_title = data.get('title')
+    promo_description = data.get('description')
+    duration = data.get('duration')
+
+    # Construct and execute the query to add a new promotion
+    query = '''
+        INSERT INTO Promotion (cafe_id, title, description, duration)
+        VALUES (%s, %s, %s, %s)
+    '''
+    values = (cafe_id, promo_title, promo_description, duration)
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query, values)
+    db.get_db().commit()
+
+    # Return success message or appropriate response
+    return 'New discount added successfully'
+
+# 2.3 Delete discount from list
+@cafe.route('/cafe/<cafe_id>/promotions', methods=['DELETE'])
+def delete_discount(cafe_id):
+    # Constructing the query using a placeholder
+    query = 'DELETE FROM Promotion WHERE cafe_id = %s'
+
+    # Executing the query with the parameter
+    cursor = db.get_db().cursor()
+    cursor.execute(query, (cafe_id,))
+    db.get_db().commit()
+
+    # Return success message
+    return 'Discount deleted successfully'
+
+
+# ENDPOINT 3 
+@cafe.route('/cafe/wifi', methods=['GET'])
+def cafes_with_wifi():
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+
+    # query to select cafes with WiFi
+    query = '''
+            SELECT cafe_id, name AS cafe_name, street, city, state, zip
+            FROM Cafe
+            WHERE has_wifi = 1
+        '''
+
+    # execute the query
+    cursor.execute(query)
+
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # create an empty list to store the results
+    cafes_data = []
+
+    # fetch all the data from the cursor
+    the_data = cursor.fetchall()
+
+    # for each row, zip the data elements together with the column headers
+    for row in the_data:
+        cafes_data.append(dict(zip(column_headers, row)))
+
+    # return the result as JSON
+    return jsonify(cafes_data)
+
+# ENDPOINT 13 
+@cafe.route('/customers/<customer_id>/<invite_id>', methods=['GET'])
+def get_invite_for_customer(customer_id, invite_id):
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+
+    # query to select the invite for the specified customer and invite_id
+    query = '''
+            SELECT
+                invite_id,
+                customer_id,
+                description,
+                cafe_id
+            FROM
+                Invite
+            WHERE
+                customer_id = %s AND invite_id = %s;
+        '''
+
+    # execute the query with parameters
+    cursor.execute(query, (customer_id, invite_id))
+
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # fetch all the data from the cursor
+    invite_data = cursor.fetchall()
+
+    # check if the invite exists
+    if not invite_data:
+        return 'Invite not found', 404
+
+    # format the result into a JSON response
+    invite_info = dict(zip(column_headers, invite_data[0]))
+
+    return jsonify(invite_info)
+
+
 #ENDPOINT 16
 # Get all the cafes from the database
 @cafe.route('/cafe', methods=['GET'])
