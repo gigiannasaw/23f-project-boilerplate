@@ -14,7 +14,7 @@ def get_cafes():
 
     #query
     query = '''
-            SELECT time, days name, street, city, state, zip
+            SELECT time, days, name, street, city, state, zip
             FROM Cafe
         '''
 
@@ -97,7 +97,7 @@ def get_cafes_outlets():
 
     # use cursor to query the database for a list of products
     cursor.execute('''
-                    SELECT time, days name, street, city, state, zip
+                    SELECT time, days, name, street, city, state, zip
                     FROM Cafe
                     WHERE has_outlets = 1
                 ''')
@@ -129,10 +129,10 @@ def get_cafe_detail(cafe_id):
 
     #query the database for cafe details
     query = ('''
-            SELECT * 
-            FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id JOIN Reviews re ON c.cafe_id = re.cafe_id 
-            WHERE id = ''' + str(cafe_id))
-    cursor.execute(query)
+            SELECT time, days, name, street, city, state, zip, website_link
+            FROM Cafe 
+            WHERE cafe_id = %s''')  
+    cursor.execute(query, (cafe_id,))
     column_headers = [x[0] for x in cursor.description]
     json_data = []
     theData = cursor.fetchall()
@@ -148,10 +148,10 @@ def get_cafe_hours(cafe_id):
 
     #query the database for cafe details
     query = ('''
-            SELECT name, hours, days 
+            SELECT time, days, name
             FROM Cafe
-            WHERE id = ''' + str(id))
-    cursor.execute(query)
+            WHERE cafe_id = %s''')  
+    cursor.execute(query, (cafe_id,))
     column_headers = [x[0] for x in cursor.description]
     json_data = []
     theData = cursor.fetchall()
@@ -168,112 +168,65 @@ def update_cafe_hours(cafe_id):
     current_app.logger.info(the_data)
 
     #extracting the variable
-    hours = the_data['hours']
+    time = the_data['time']
     days = the_data['days']
 
     # Get a cursor object from the database
     cursor = db.get_db().cursor()
 
     # Prepare the UPDATE query with parameterized inputs
-    query = 'UPDATE Cafe SET hours = ' + hours + ", days = " + days + "WHERE cafe_id =" + str(id)
+    query = 'UPDATE Cafe SET time = %s, days = %s WHERE cafe_id = %s'
 
     # executing and committing the update statement 
     cursor = db.get_db().cursor()
-    cursor.execute(query)
+    cursor.execute(query, (time, days, cafe_id))
     db.get_db().commit()
     
     return 'Success!'
 
 #ENDPOINT 6 --------------
 # Get a list of all the cafes with the given price rating
-# @cafe.route('/cafe/<price>', methods=['GET'])
-# def get_cafes_price(price):
-#     # get a cursor object from the database
-#     cursor = db.get_db().cursor()
-
-#     # use cursor to query the database for a list of products
-#     cursor.execute('''
-#                     SELECT name, street, city, state, zip, Ratings.price
-#                     FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
-#                     WHERE Ratings.price = ''' + price)
-
-#     # grab the column headers from the returned data
-#     column_headers = [x[0] for x in cursor.description]
-
-#     # create an empty dictionary object to use in 
-#     # putting column headers together with data
-#     json_data = []
-
-#     # fetch all the data from the cursor
-#     theData = cursor.fetchall()
-
-#     # for each of the rows, zip the data elements together with
-#     # the column headers. 
-#     for row in theData:
-#         json_data.append(dict(zip(column_headers, row)))
-
-#     return jsonify(json_data)
-
-
-# Add a cafe to the list of cafes with a given price
-@cafe.route('/cafe/<price>', methods=['POST'])
-def add_new_price_cafe(price): 
-    
-    # collecting data from the request object 
-    the_data = request.json
-    current_app.logger.info(the_data)
-
-    #extracting the variable
-    owner = the_data['owner_id']
-    time = the_data['time']
-    days = the_data['days']
-    website = the_data['website_link']
-    name = the_data['name']
-    street = the_data['street']
-    city = the_data['city']
-    state = the_data['state']
-    zip = the_data['zip']
-    cafe_price = price
-    wifi = the_data['has_wifi']
-    outlets = the_data['has_outlets']
-    id = the_data['cafe_id']
-
-    # Constructing the query
-    query = 'INSERT INTO Cafe (owner_id, time, days, website_link, name, street, city, state, zip, price, has_wifi, has_outlets, cafe_id) VALUES ("'
-    query += int(owner) + '", "'
-    query += time + '", "'
-    query += days + '", "'
-    query += website + '", '
-    query += name + '", '
-    query += street + '", '
-    query += city + '", '
-    query += state + '", '
-    query += zip + '", '
-    query += cafe_price + '", '
-    query += wifi + '", '
-    query += outlets + '", '
-    query += id + ')'
-    current_app.logger.info(query)
-
-    # executing and committing the insert statement 
-    cursor = db.get_db().cursor()
-    cursor.execute(query)
-    db.get_db().commit()
-    
-    return 'Success!'
-
-#ENDPOINT 7 --------------
-# Get a list of all the cafes with the given service speed
-@cafe.route('/cafe/<service_speed>', methods=['GET'])
-def get_cafes_price(service_speed):
+@cafe.route('/cafe/low-price', methods=['GET'])
+def get_cheap_cafes():
     # get a cursor object from the database
     cursor = db.get_db().cursor()
 
     # use cursor to query the database for a list of products
     cursor.execute('''
-                    SELECT name, street, city, state, zip, Ratings.price, Ratings.service_speed
+                    SELECT name, street, city, state, zip, price
                     FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
-                    WHERE Ratings.service_speed = ''' + service_speed)
+                    WHERE r.price = 1
+                    ''')
+
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # create an empty dictionary object to use in 
+    # putting column headers together with data
+    json_data = []
+
+    # fetch all the data from the cursor
+    theData = cursor.fetchall()
+
+    # for each of the rows, zip the data elements together with
+    # the column headers. 
+    for row in theData:
+        json_data.append(dict(zip(column_headers, row)))
+
+    return jsonify(json_data)
+
+#ENDPOINT 7 --------------
+# Get a list of all the cafes with the given service speed
+@cafe.route('/cafe/fast-service', methods=['GET'])
+def get_cafes_price():
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+
+    # use cursor to query the database for a list of products
+    cursor.execute('''
+                    SELECT name, street, city, state, zip, price, service_speed
+                    FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
+                    WHERE r.service_speed = 5''')
 
     # grab the column headers from the returned data
     column_headers = [x[0] for x in cursor.description]
@@ -291,6 +244,38 @@ def get_cafes_price(service_speed):
         json_data.append(dict(zip(column_headers, row)))
 
     return jsonify(json_data)  
+
+#ENDPOINT 11 --------------
+# Get all the reviews for a particular cafe
+@cafe.route('/cafe/<cafe_id>/reviews', methods=['GET'])
+def get_cheap_cafes(cafe_id):
+    # get a cursor object from the database
+    cursor = db.get_db().cursor()
+    query = ('''
+                SELECT first_name, last_name, rank, content
+                FROM Customers cust JOIN Reviews r ON cust.customer_id = r.customer_id JOIN Cafe c ON r.cafe_id = c.cafe_id
+                WHERE cafe_id = %s
+            ''')
+
+    # use cursor to query the database for a list of products
+    cursor.execute(query, (cafe_id,))
+
+    # grab the column headers from the returned data
+    column_headers = [x[0] for x in cursor.description]
+
+    # create an empty dictionary object to use in 
+    # putting column headers together with data
+    json_data = []
+
+    # fetch all the data from the cursor
+    theData = cursor.fetchall()
+
+    # for each of the rows, zip the data elements together with
+    # the column headers. 
+    for row in theData:
+        json_data.append(dict(zip(column_headers, row)))
+
+    return jsonify(json_data)
 
 #ENDPOINT 12 --------------
 # Add a comment to a cafe
