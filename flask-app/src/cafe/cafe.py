@@ -93,13 +93,16 @@ def get_cafeid_with_promotions():
 #2.2 Add new discount to the list  
 @cafe.route('/cafe/<cafe_id>/promotions', methods=['POST'])
 def add_new_discount(cafe_id):
-    data = request.json
 
-    # Extract relevant information from the data
-    promo_title = data.get('title')
-    promo_description = data.get('description')
-    duration = data.get('duration')
+    # collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
 
+    # Extracting the variables
+    promo_title = the_data['title']
+    promo_description = the_data['description']
+    duration = the_data['duration']
+    
     # Construct and execute the query to add a new promotion
     query = '''
         INSERT INTO Promotion (cafe_id, title, description, duration)
@@ -114,15 +117,15 @@ def add_new_discount(cafe_id):
     # Return success message or appropriate response
     return 'New discount added successfully'
 
-# 2.3 Delete discount from list
-@cafe.route('/cafe/<cafe_id>/promotions', methods=['DELETE'])
-def delete_discount(cafe_id):
-    # Constructing the query using a placeholder
-    query = 'DELETE FROM Promotion WHERE cafe_id = %s'
+# 2.3 Delete all discount from a cafe from list
+@cafe.route('/cafe/<cafe_id>/promotions/', methods=['DELETE'])
+def delete_discount(cafe_id, promo_id):
+    # Constructing the query using placeholders for cafe_id and promo_id
+    query = 'DELETE FROM Promotion WHERE cafe_id = %s
 
-    # Executing the query with the parameter
+    # Executing the query with the parameters
     cursor = db.get_db().cursor()
-    cursor.execute(query, (cafe_id,))
+    cursor.execute(query, (cafe_id, promo_id))
     db.get_db().commit()
 
     # Return success message
@@ -130,6 +133,7 @@ def delete_discount(cafe_id):
 
 
 # ENDPOINT 3 
+# Return a list of all cafes with wifi
 @cafe.route('/cafe/wifi', methods=['GET'])
 def cafes_with_wifi():
     # get a cursor object from the database
@@ -164,6 +168,7 @@ def cafes_with_wifi():
     return jsonify(cafes_data)
 
 # ENDPOINT 13 
+# Get an invite of {invite_id} for a customer with {customer_id} for a special event
 @cafe.route('/customers/<customer_id>/<invite_id>', methods=['GET'])
 def get_invite_for_customer(customer_id, invite_id):
     # get a cursor object from the database
