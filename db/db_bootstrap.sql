@@ -1,3 +1,5 @@
+DROP DATABASE CafeConnect;
+
 -- This file is to bootstrap a database for the CS3200 project. 
 
 -- Create a new database.  You can change the name later.  You'll
