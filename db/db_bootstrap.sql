@@ -1,11 +1,11 @@
-DROP DATABASE CafeConnect;
+DROP DATABASE IF EXISTS CafeConnect;
 
 -- This file is to bootstrap a database for the CS3200 project. 
 
 -- Create a new database.  You can change the name later.  You'll
 -- need this name in the FLASK API file(s),  the AppSmith 
 -- data source creation.
-CREATE DATABASE CafeConnect;
+CREATE DATABASE IF NOT EXISTS CafeConnect;
 
 -- Via the Docker Compose file, a special user called webapp will 
 -- be created in MySQL. We are going to grant that user 
