@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS DailyDrinker (
 
 CREATE TABLE IF NOT EXISTS Promotion (
     cafe_id int NOT NULL,
-    promo_id int NOT NULL AUTO_INCREMENT,
+    promo_id int NOT NULL,
     description text NOT NULL,
     title text,
     duration int,
