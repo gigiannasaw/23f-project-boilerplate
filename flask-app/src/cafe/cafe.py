@@ -18,13 +18,14 @@ def get_cafes_with_promotions():
                 C.name AS cafe_name,
                 C.time,
                 C.days,
+                C.cafe_id,
                 CONCAT(C.street, ', ', C.city, ', ', C.state, ' ', C.zip) AS address
             FROM
                 Cafe AS C
             JOIN
                 Promotion AS P ON C.cafe_id = P.cafe_id
             GROUP BY cafe_name, time, days,
-                    address;   
+                    address, cafe_id;
         '''
 
     # use cursor to query the database for a list of products
@@ -50,7 +51,7 @@ def get_cafes_with_promotions():
 # ENDPOINT 2 
 #2.1 GET a list of all promotions for a cafe with {cafe_id}
 @cafe.route('/cafe/<cafe_id>/promotions', methods=['GET'])
-def get_cafeid_with_promotions():
+def get_cafeid_with_promotions(cafe_id):
 
     # get a cursor object from the database
     cursor = db.get_db().cursor()
@@ -66,12 +67,13 @@ def get_cafeid_with_promotions():
                 Cafe AS C
             JOIN
                 Promotion AS P ON C.cafe_id = P.cafe_id
+            WHERE C.cafe_id = %s
             GROUP BY cafe_name, time, days,
                     address;   
         '''
 
     # use cursor to query the database for a list of products
-    cursor.execute(query)
+    cursor.execute(query, cafe_id)
 
     # grab the column headers from the returned data
     column_headers = [x[0] for x in cursor.description]
@@ -141,7 +143,7 @@ def get_cafes_wifi():
 
     # use cursor to query the database for a list of products
     cursor.execute('''
-                    SELECT time, days, name, street, city, state, zip
+                    SELECT cafe_id, time, days, name, street, city, state, zip
                     FROM Cafe
                     WHERE has_wifi = 1
                 ''')
@@ -213,7 +215,7 @@ def get_cafes():
 
     #query
     query = '''
-            SELECT time, days, name, CONCAT(street, ', ', city, ', ', state, ' ', zip) AS address
+            SELECT cafe_id, time, days, name, CONCAT(street, ', ', city, ', ', state, ' ', zip) AS address
             FROM Cafe
         '''
 
@@ -237,7 +239,7 @@ def get_cafes():
 
     return jsonify(json_data)
 
-# Add a cafe with outlets to the list of cafes with outlets
+# Add a cafe to the list of cafes
 @cafe.route('/cafe', methods=['POST'])
 def add_new_cafe(): 
     
@@ -296,7 +298,7 @@ def get_cafes_outlets():
 
     # use cursor to query the database for a list of products
     cursor.execute('''
-                    SELECT time, days, name, street, city, state, zip
+                    SELECT cafe_id, time, days, name, street, city, state, zip
                     FROM Cafe
                     WHERE has_outlets = 1
                 ''')
@@ -392,7 +394,7 @@ def get_cheap_cafes():
 
     # use cursor to query the database for a list of products
     cursor.execute('''
-                    SELECT name, street, city, state, zip, price
+                    SELECT name, street, city, state, zip, price, c.cafe_id
                     FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
                     WHERE r.price = 1
                     ''')
@@ -423,7 +425,7 @@ def get_cafes_price():
 
     # use cursor to query the database for a list of products
     cursor.execute('''
-                    SELECT name, street, city, state, zip, price, service_speed
+                    SELECT name, street, city, state, zip, price, service_speed, c.cafe_id
                     FROM Cafe c JOIN Ratings r ON c.cafe_id = r.cafe_id
                     WHERE r.service_speed = 5''')
 
