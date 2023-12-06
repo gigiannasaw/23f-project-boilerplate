@@ -78,15 +78,15 @@ CREATE TABLE IF NOT EXISTS DailyDrinker (
     FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
--- CREATE TABLE IF NOT EXISTS Promotion (
---     cafe_id int NOT NULL,
---     promo_id int NOT NULL,
---     description text NOT NULL,
---     title text,
---     duration int,
---     PRIMARY KEY (cafe_id, promo_id),
---     FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id) ON UPDATE CASCADE ON DELETE CASCADE
--- );
+CREATE TABLE IF NOT EXISTS Promotion (
+    cafe_id int NOT NULL,
+    promo_id int NOT NULL,
+    description text NOT NULL,
+    title text,
+    duration int,
+    PRIMARY KEY (cafe_id, promo_id),
+    FOREIGN KEY (cafe_id) REFERENCES Cafe(cafe_id) ON UPDATE CASCADE ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS Reviews (
     customer_id int NOT NULL,
