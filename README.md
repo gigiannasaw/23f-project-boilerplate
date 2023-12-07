@@ -32,10 +32,10 @@ The **db_bootstrap.sql** file contains all the database code for this project in
 
 The **cafe.py** file contains all the api endpoint definitions for the CafeConnect application.
 
-Get - Endpoint 1,2,3,13,16.1,4,5.1,5.2,6,7,11
-Post - Endpoint 2.2,16.2,
-Delete - Endpoint 16.3,
-Put - Endpoint 5.3
+GET - Endpoint 1,2,3,13,16.1,4,5.1,5.2,6,7,11
+POST - Endpoint 2.2,16.2,
+DELETE - Endpoint 16.3,
+PUT - Endpoint 5.3
 
 **Endpoint 1: Get All Cafes with Promotions**
 URL: /cafe/promotions
