@@ -246,7 +246,27 @@ INSERT INTO Cafe (cafe_id, owner_id, name, time, days, website_link, street, cit
 	('47', 'Allistir', 'Dunlop', '1'),
 	('48', 'Denyse', 'Jeanet', '3'),
 	('49', 'Nolan', 'Macey', '2'),
-	('50', 'Gregorio', 'Howgate', '2');
+	('50', 'Gregorio', 'Howgate', '2'),
+	('51', 'Maya', 'Ali', '1'),
+	('52', 'Jacob', 'Lambert', '1'),
+	('53', 'Salma', 'Nair', '4'),
+	('54', 'Yen', 'Li', '3'),
+	('55', 'Susan', 'Whittaker', '3'),
+	('56', 'Jeremy', 'Scott', '1'),
+	('57', 'Morgan', 'Lambert', '1'),
+	('58', 'Aryan', 'Khan', '2'),
+	('59', 'Imogen', 'Davis', '3'),
+	('60', 'Kareena', 'Sharma', '1'),
+	('61', 'Russell', 'Kane', '1'),
+	('62', 'Eli', 'Ora', '5'),
+	('63', 'Esmaan', 'Roy', '2'),
+	('64', 'Vanessa', 'Norris', '3'),
+	('65', 'Emily', 'Norman', '1'),
+	('66', 'Makoto', 'Fujiwara', '2'),
+	('67', 'Chaewon', 'Do', '3'),
+	('68', 'Minwoo', 'Lee', '3'),
+	('69', 'Alexander', 'Faha', '4'),
+	('70', 'Riya', 'Patel', '1');
 
 
 INSERT INTO Critic (customer_id, user_status) VALUES
@@ -271,7 +291,27 @@ INSERT INTO Critic (customer_id, user_status) VALUES
 	('17'),
 	('18'),
 	('19'),
-	('20');
+	('20'),
+	('41'),
+	('42'),
+	('43'),
+	('44'),
+	('45'),
+	('46'),
+	('47'),
+	('48'),
+	('49'),
+	('50'),
+	('61'),
+	('62'),
+	('63'),
+	('64'),
+	('65'),
+	('66'),
+	('67'),
+	('68'),
+	('69'),
+	('70');;
 
 INSERT INTO Student (customer_id) VALUES
 	('21'),
@@ -293,7 +333,27 @@ INSERT INTO Student (customer_id) VALUES
 	('37'),
 	('38'),
 	('39'),
-	('40');
+	('40'),
+	('41'),
+	('42'),
+	('43'),
+	('44'),
+	('45'),
+	('46'),
+	('47'),
+	('48'),
+	('49'),
+	('50'),
+	('51'),
+	('52'),
+	('53'),
+	('54'),
+	('55'),
+	('56'),
+	('57'),
+	('58'),
+	('59'),
+	('60');
 
 
   INSERT INTO Ratings (rating_id, service_speed, price, noise, options, customer_id, cafe_id) VALUES
