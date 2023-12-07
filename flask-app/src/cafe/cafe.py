@@ -59,10 +59,10 @@ def get_cafeid_with_promotions(cafe_id):
     #query
     query = '''
             SELECT
-                C.name AS cafe_name,
-                C.time,
-                C.days,
-                CONCAT(C.street, ', ', C.city, ', ', C.state, ' ', C.zip) AS address
+                P.promo_id,
+                P.title,
+                P.description,
+                P.duration
             FROM
                 Cafe AS C
             JOIN
