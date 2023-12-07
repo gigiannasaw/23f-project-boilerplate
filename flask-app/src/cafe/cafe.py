@@ -67,9 +67,7 @@ def get_cafeid_with_promotions(cafe_id):
                 Cafe AS C
             JOIN
                 Promotion AS P ON C.cafe_id = P.cafe_id
-            WHERE C.cafe_id = %s
-            GROUP BY cafe_name, time, days,
-                    address;   
+            WHERE C.cafe_id = %s 
         '''
 
     # use cursor to query the database for a list of products
